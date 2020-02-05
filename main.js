@@ -115,7 +115,7 @@ handlers["completedLevel"] = CompletedLevel;
 var CreatePlaySpace = function (Level, context) {
     var data = {
         "Key": "test",
-        "value": ["a", "b"]
+        "Value": JSON.stringify(["a", "b"])
     };
     var setTitleDataResponse = server.SetTitleData(data);
 };
