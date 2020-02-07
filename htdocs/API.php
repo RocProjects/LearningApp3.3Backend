@@ -1,46 +1,67 @@
 <?php
 
-    function Register()
-    {
-        global $dbConn;
+function Register()
+{
+    global $dbConn;
 
-        $parameters = array("FirstName","LastName","UserName","Password");
-        foreach ($parameters as $type) 
-        {
-            if(!isset($_POST[$type]))
-            {
-                die("Register: Missing parameter '".$type."'");
-            }
-        }
+    ValidateParameters(array("FirstName", "LastName", "UserName", "Password"));
 
-        $dbStatement = $dbConn->prepare("INSERT INTO users (FirstName,LastName,UserName,Password)VALUES (:FirstName,:LastName,:UserName,:Password)");
+    $dbStatement = $dbConn->prepare("INSERT INTO users (firstname,lastname,username,password)VALUES (?,?,?,?)");
 
-        $password = password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
+    $password = crypt($_POST["Password"], '$2a$07$usqsogesafytringfjsalt$'); // password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
 
-        $dbStatement->execute(array(':FirstName'=>$_POST["FirstName"],':LastName' => $_POST["LastName"], ':UserName'=>$_POST["UserName"],':Password'=>$password));
 
+    $dbStatement->bind_param("ssss", $_POST["FirstName"], $_POST["LastName"], $_POST["UserName"], $password);
+
+    if (!$dbStatement->execute()) {
+        die(new UserRegisterQuaryResponse($dbStatement));
     }
 
-    function Login()
-    {
-        global $dbConn;
+    die(new Response(ResponseTypes::succeeded, "no FatalError " . crypt($_POST["Password"], '$2a$07$usqsogesafytringfjsalt$')));
+}
 
-        $parameters = array("UserName","Password");
-        foreach ($parameters as $type) 
-        {
-            if(!isset($_POST[$type]))
-            {
-                die("Login: Missing parameter '".$type."'");
-            }
-        }
+function Login()
+{
+    global $dbConn;
 
-        $userName = $_POST["UserName"];
-        $password = password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
+    ValidateParameters($parameters = array("UserName", "Password"));
 
-        $dbStatement = $dbConn->prepare("SELECT (FirstName,LastName,Klas,Teacher)FROM users WHERE UserName=:UserName AND Password =:Password");
-        $dbStatement->execute(array(':UserName' =>$userName,':Password'=>$password));
-        $dbStatement->store_result();
-        $dbStatement->bind_result();
+    $userName = $_POST["UserName"];
+    $password = crypt($_POST["Password"], '$2a$07$usqsogesafytringfjsalt$'); // password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
+
+    if (!($dbStatement = $dbConn->prepare("SELECT firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
+        die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
     }
 
-?>
+    $dbStatement->bind_param("ss", $userName, $password);
+
+    
+    try {
+        $dbStatement->execute();
+    } catch (PDOException $e) {
+        die(new Response(ResponseTypes::FatalError, $e->getMessage()));
+    }
+
+    $dbStatement->store_result();
+   
+    if($dbStatement->num_rows >= 1)
+    {
+        $user = new User($dbStatement);
+
+        die(new UserLoginResponse(ResponseTypes::succeeded,"Auhtenticated", $user));
+    }
+    else
+    {
+        die(new Response(ResponseTypes::Silent_FatalError,"Failed to find user"));
+    }
+}
+
+
+function ValidateParameters(array $parameters)
+{
+    foreach ($parameters as $type) {
+        if (!isset($_POST[$type])) {
+            die(new Response(ResponseTypes::FatalError, "Register: Missing parameter '" . $type . "'"));
+        }
+    }
+}
