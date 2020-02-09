@@ -8,6 +8,7 @@ abstract class ResponseTypes
 
 class Response
 {
+    public int $ResponseStatus;
     public function __construct(int $Status, $body)
     {
         $this->ResponseStatus = $Status;
@@ -22,14 +23,6 @@ class Response
     public function __toString()
     {
         return json_encode($this);
-    }
-}
-
-class ResponseBody extends Response
-{
-    public function __construct($value)
-    {
-        $this->value = $value;
     }
 }
 
@@ -79,6 +72,32 @@ class UserRegisterQuaryResponse extends QuaryResponse
         return "$db->errno";
     }
 }
+
+class EventSucceeded extends Response
+{
+    public function __construct()
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+        $this->StatusMessage = "Event Executed";
+    }
+}
+
+class UsersPageResponse extends Response
+{
+    public $UserInfo = array();
+    public function __construct(mysqli_stmt $data)
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+        $this->StatusMessage = "Recieved Data check data parameter";
+
+        while($data->more_results())
+        {
+            array_push($this->UserInfo,new user($data));
+            $data->next_result();
+        }
+    }
+}
+
 
 
 class User
