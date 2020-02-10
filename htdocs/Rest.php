@@ -8,6 +8,7 @@ abstract class ResponseTypes
 
 class Response
 {
+    public int $ResponseStatus;
     public function __construct(int $Status, $body)
     {
         $this->ResponseStatus = $Status;
@@ -22,14 +23,6 @@ class Response
     public function __toString()
     {
         return json_encode($this);
-    }
-}
-
-class ResponseBody extends Response
-{
-    public function __construct($value)
-    {
-        $this->value = $value;
     }
 }
 
@@ -54,12 +47,12 @@ class UserLoginResponse extends Response
 
 class QuaryResponse extends Response
 {
-    public function GetDBStatusMessage(mysqli_stmt $db)
+    public function GetDBStatusMessage(PDOStatement $db)
     {
         return $db->errno;
     }
 
-    public function __construct(mysqli_stmt $db)
+    public function __construct(PDOStatement $db)
     {
         $this->ResponseStatus = ResponseTypes::FatalError;
         $e = new Exception();
@@ -71,7 +64,7 @@ class QuaryResponse extends Response
 
 class UserRegisterQuaryResponse extends QuaryResponse
 {
-    public function GetDBStatusMessage(mysqli_stmt $db)
+    public function GetDBStatusMessage(PDOStatement $db)
     {
         if ($db->errno == 1062) {
             return "UserName not available";
@@ -80,13 +73,41 @@ class UserRegisterQuaryResponse extends QuaryResponse
     }
 }
 
+class EventSucceeded extends Response
+{
+    public function __construct()
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+        $this->StatusMessage = "Event Executed";
+    }
+}
+
+class UsersPageResponse extends Response
+{
+    public $UserInfo = array();
+    public function __construct(PDOStatement $db)
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+        $this->StatusMessage = json_encode($db->fetchAll(PDO::FETCH_OBJ));
+
+        foreach ($db->fetchAll(PDO::FETCH_OBJ) as $element)
+        {
+            array_push($this->UserInfo,new user($element));
+        }
+    }
+}
+
+
 
 class User
 {
-    public function __construct(mysqli_stmt $data)
+    public function __construct($data)
     {
-        $data->bind_result($this->firstName, $this->lastName, $this->Klas, $this->isTeacher);
-        $data->fetch();
+        //var_dump($data);
+        $this->firstName = $data->firstname;
+        $this->lastName = $data->lastname;
+        $this->Klas = $data->klas;
+        $this->isTeacher = $data->teacher;
     }
 
     public function __toString()
