@@ -2,5 +2,5 @@
 /*
 
 !htdocs/*
-!mysql/*
+!mysql/**
 !.gitignore
