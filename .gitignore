@@ -1,6 +1,5 @@
 *
 /*
 
-!htdocs/*
-!mysql/**
+!htdocs/**
 !.gitignore
