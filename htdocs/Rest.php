@@ -30,14 +30,8 @@ class UserLoginResponse extends Response
 {
     public function __construct(int $Status,string $body ,User $user)
     {
-        $this->ResponseStatus = $Status;
-        $this->StatusMessage = $body;
+        parent::__construct($Status,$body);
         $this->user = $user;
-
-        if ($Status == ResponseTypes::FatalError) {
-            $e = new Exception();
-            $this->StackCall = $e->getTraceAsString();
-        }
     }
     public function __toString()
     {
@@ -54,11 +48,7 @@ class QuaryResponse extends Response
 
     public function __construct(PDOStatement $db)
     {
-        $this->ResponseStatus = ResponseTypes::FatalError;
-        $e = new Exception();
-        $this->StackCall = $e->getTraceAsString();
-
-        $this->StatusMessage = $this->GetDBStatusMessage($db);
+        parent::__construct(ResponseTypes::FatalError,$this->GetDBStatusMessage($db));
     }
 }
 
@@ -77,8 +67,7 @@ class EventSucceeded extends Response
 {
     public function __construct()
     {
-        $this->ResponseStatus = ResponseTypes::succeeded;
-        $this->StatusMessage = "Event Executed";
+        parent::__construct(ResponseTypes::succeeded,"Event Executed")
     }
 }
 
@@ -97,6 +86,67 @@ class UsersPageResponse extends Response
     }
 }
 
+
+abstract class Node
+{
+    public string Name;
+    public Location;
+
+    public function __construct($data)
+    {
+        $this->Name = $data->Name;
+        $this->Location = $data->Location;
+    }
+
+    public static function LoadFromJsonObject($data)
+    {
+        switch($data['$type'])
+        {
+            case InfoNode::GetType():
+                return new InfoNode($data);
+            break;
+        }
+    }
+
+    public function GetType(){return "NULL BASENODE";}
+}
+
+class InfoNode extends Node
+{
+
+    public string Info;
+    public function __construct($data)
+    {
+        parent::__construct($data);
+        $this->Info = $data->info; 
+    }
+    
+    public static function GetType()
+    {
+        return "Core.PlaySpace.InfoNode, Assembly-CSharp";
+    }
+}
+
+class Location
+{
+    public string Image;
+    public Node[] nodes; 
+}
+
+class PlaySpace
+{
+    public string Name;
+    public string Description;
+    public Location[] Locations;
+
+
+    public __construct(string)
+
+    public static function LoadFromJsonObject($data)
+    {
+
+    }
+}
 
 
 class User

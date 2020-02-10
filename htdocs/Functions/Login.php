@@ -6,7 +6,7 @@ function Login()
     ValidateParameters($parameters = array("UserName", "Password"));
 
     $userName = $_POST["UserName"];
-    $password = crypt($_POST["Password"], $salt); // password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
+    $password = crypt($_POST["Password"], $salt);
 
     if (!($dbStatement = $dbConn->prepare("SELECT firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
         die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
