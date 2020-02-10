@@ -47,12 +47,12 @@ class UserLoginResponse extends Response
 
 class QuaryResponse extends Response
 {
-    public function GetDBStatusMessage(mysqli_stmt $db)
+    public function GetDBStatusMessage(PDOStatement $db)
     {
         return $db->errno;
     }
 
-    public function __construct(mysqli_stmt $db)
+    public function __construct(PDOStatement $db)
     {
         $this->ResponseStatus = ResponseTypes::FatalError;
         $e = new Exception();
@@ -64,7 +64,7 @@ class QuaryResponse extends Response
 
 class UserRegisterQuaryResponse extends QuaryResponse
 {
-    public function GetDBStatusMessage(mysqli_stmt $db)
+    public function GetDBStatusMessage(PDOStatement $db)
     {
         if ($db->errno == 1062) {
             return "UserName not available";
@@ -85,15 +85,14 @@ class EventSucceeded extends Response
 class UsersPageResponse extends Response
 {
     public $UserInfo = array();
-    public function __construct(mysqli_stmt $data)
+    public function __construct(PDOStatement $db)
     {
         $this->ResponseStatus = ResponseTypes::succeeded;
-        $this->StatusMessage = "Recieved Data check data parameter";
+        $this->StatusMessage = json_encode($db->fetchAll(PDO::FETCH_OBJ));
 
-        while($data->more_results())
+        foreach ($db->fetchAll(PDO::FETCH_OBJ) as $element)
         {
-            array_push($this->UserInfo,new user($data));
-            $data->next_result();
+            array_push($this->UserInfo,new user($element));
         }
     }
 }
@@ -102,10 +101,13 @@ class UsersPageResponse extends Response
 
 class User
 {
-    public function __construct(mysqli_stmt $data)
+    public function __construct($data)
     {
-        $data->bind_result($this->firstName, $this->lastName, $this->Klas, $this->isTeacher);
-        $data->fetch();
+        //var_dump($data);
+        $this->firstName = $data->firstname;
+        $this->lastName = $data->lastname;
+        $this->Klas = $data->klas;
+        $this->isTeacher = $data->teacher;
     }
 
     public function __toString()
