@@ -36,4 +36,3 @@
             die(new Response(ResponseTypes::Silent_FatalError,"Failed to Login"));
         }
     }
-?>

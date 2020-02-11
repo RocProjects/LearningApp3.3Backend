@@ -1,6 +1,6 @@
 <?php
 
-$salt ='$2a$07$usqsogesafytringfjsalt$';
+$salt = '$2a$07$usqsogesafytringfjsalt$';
 
 function Session()
 {
@@ -12,10 +12,19 @@ function Session()
 
 function SessionActive()
 {
-    if(!isset( $_SESSION['User']))
-    {
+    if (!isset($_SESSION['User'])) {
         //user is not logged in/ session is invalid
         die(new Response(ResponseTypes::FatalError, "Failed to find user session"));
+    }
+}
+
+function TeacherSessionActive()
+{
+    SessionActive();
+
+    if(!$_SESSION['User']->IsTeacher)
+    {
+        die(new Response(ResponseTypes::FatalError,"Logged in User is not a teacher"));
     }
 }
 
@@ -27,4 +36,3 @@ function ValidateParameters(array $parameters)
         }
     }
 }
-?>

@@ -11,4 +11,3 @@
         $space->Save();
         die(new Response(ResponseTypes::succeeded,json_encode($space)));
     }
-?>
