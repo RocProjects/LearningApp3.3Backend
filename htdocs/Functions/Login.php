@@ -1,40 +1,39 @@
 <?php
-function Login()
-{
-    global $dbConn,$salt;
-
-    ValidateParameters($parameters = array("UserName", "Password"));
-
-    $userName = $_POST["UserName"];
-    $password = crypt($_POST["Password"], $salt);
-
-    if (!($dbStatement = $dbConn->prepare("SELECT firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
-        die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-    }
-
-    $dbStatement->bind_param("ss", $userName, $password);
-
+    function Login()
+    {
+        global $dbConn,$salt;
     
-    try {
-        $dbStatement->execute();
-    } catch (PDOException $e) {
-        die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-    }
-
-    $dbStatement->store_result();
-   
-    if($dbStatement->num_rows >= 1)
-    {
-        $user = new User($dbStatement);
-
+        ValidateParameters($parameters = array("UserName", "Password"));
+    
+        $userName = $_POST["UserName"];
+        $password = crypt($_POST["Password"], $salt);
+    
+        if (!($dbStatement = $dbConn->prepare("SELECT ID, firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
+            die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
+        }
+    
+    
         
-        $_SESSION['User'] = $user;
-
-        die(new UserLoginResponse(ResponseTypes::succeeded,"Auhtenticated", $user));
+        try {
+            $dbStatement->execute(array($userName,$password));
+        } catch (PDOException $e) {
+            die(new Response(ResponseTypes::FatalError, $e->getMessage()));
+        }
+    
+        $result = $dbStatement->fetchAll(PDO::FETCH_OBJ);
+    
+        if(count($result) >= 1)
+        {
+            $user = new User($result[0]);
+        
+            
+            $_SESSION['User'] = $user;
+        
+            die(new UserLoginResponse(ResponseTypes::succeeded,"Auhtenticated", $user));
+        }
+        else
+        {
+            die(new Response(ResponseTypes::Silent_FatalError,"Failed to Login"));
+        }
     }
-    else
-    {
-        die(new Response(ResponseTypes::Silent_FatalError,"Failed to Login"));
-    }
-}
 ?>

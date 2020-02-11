@@ -1,21 +1,22 @@
 <?php
-function Register()
-{
-    global $dbConn,$salt;
+    function Register()
+    {
+        global $dbConn,$salt;
+    
+        ValidateParameters(array("FirstName", "LastName", "UserName", "Password"));
+    
+        $dbStatement = $dbConn->prepare("INSERT INTO users (firstname,lastname,username,password)VALUES (?,?,?,?)");
+    
+        $password = crypt($_POST["Password"], $salt); // password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
+    
+        try{
+            $dbStatement->execute(array($_POST["FirstName"], $_POST["LastName"], $_POST["UserName"], $password));
+            die(new Response(ResponseTypes::succeeded, "no FatalError " . crypt($_POST["Password"], '$2a$07$usqsogesafytringfjsalt$')));
 
-    ValidateParameters(array("FirstName", "LastName", "UserName", "Password"));
-
-    $dbStatement = $dbConn->prepare("INSERT INTO users (firstname,lastname,username,password)VALUES (?,?,?,?)");
-
-    $password = crypt($_POST["Password"], $salt); // password_hash($_POST["Password"] ,PASSWORD_BCRYPT, ['cost' =>15]);
-
-
-    $dbStatement->bind_param("ssss", $_POST["FirstName"], $_POST["LastName"], $_POST["UserName"], $password);
-
-    if (!$dbStatement->execute()) {
-        die(new UserRegisterQuaryResponse($dbStatement));
+        }catch(PDOException $e){
+            die(new UserRegisterQuaryResponse($e));
+        }
+    
+        
     }
-
-    die(new Response(ResponseTypes::succeeded, "no FatalError " . crypt($_POST["Password"], '$2a$07$usqsogesafytringfjsalt$')));
-}
 ?>

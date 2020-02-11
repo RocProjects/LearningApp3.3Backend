@@ -1,14 +1,14 @@
 <?php
 
-function SavePlaySpace()
-{
+    function SavePlaySpace()
+    {
+        
+        ValidateParameters(array("PlaySpaceData"));
 
-    ValidateParameters(array("PlaySpaceData"));
+        $PlaySpaceData = $_POST["PlaySpaceData"];
+        $space = PlaySpace::LoadFromJson($PlaySpaceData);
 
-    $PlaySpaceData = $_POST["PlaySpaceData"];
-
-    
-    var_dump($PlaySpaceData);
-
-}
+        $space->Save();
+        die(new Response(ResponseTypes::succeeded,json_encode($space)));
+    }
 ?>
