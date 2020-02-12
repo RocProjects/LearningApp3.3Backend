@@ -28,16 +28,16 @@ jobs:
       #  php-version: '7.1'
        # coverage: xdebug #optional, setup coverage driver
         #tools: php-cs-fixer, phpunit #optional, setup tools globally
-
+    - uses: actions/checkout@master
     - name: Publish code
       uses: SamKirkland/FTP-Deploy-Action@2.0.0
       with:
         # FTP server name (you may need to specify a port)
-        ftp_server: groep05.mediaenvormgeving.nl:21
+        FTP_SERVER: groep05.mediaenvormgeving.nl
         # FTP account username
-        ftp_username: groep05@mediaenvormgeving.nl
+        FTP_USERNAME: groep05@mediaenvormgeving.nl
         # FTP account password
-        ftp_password: groep05
-        remote_dir:  Server
+        FTP_PASSWORD: groep05
+        REMOTE_DIR:  Server
     
     
