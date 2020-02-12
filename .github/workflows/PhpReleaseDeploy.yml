@@ -20,7 +20,7 @@ jobs:
         # FTP account password
         FTP_PASSWORD: groep05
         LOCAL_DIR: htdocs/Server
-        args: --exclude-glob=.git*/** --exclude-glob=.git** --vv
+        args: --exclude-glob=.git*/** --exclude-glob=.git** --exclde-glob = .gitignore
     #- uses: actions/checkout@v2
    # - name: Run a one-line script
     #  run: echo Hello, world!
