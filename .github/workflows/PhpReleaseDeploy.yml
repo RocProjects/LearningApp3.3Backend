@@ -19,7 +19,12 @@ jobs:
         FTP_USERNAME: groep05@mediaenvormgeving.nl
         # FTP account password
         FTP_PASSWORD: groep05
+<<<<<<< HEAD
         REMOTE_DIR:  Server
+=======
+        LOCAL_DIR: htdocs/Server
+        args: --exclude-glob=.git*/** --exclude-glob=.git** --exclde-glob = .gitignore
+>>>>>>> b5fbf1f4ea9585b7600c185afb949a0e5fcfd749
     #- uses: actions/checkout@v2
    # - name: Run a one-line script
     #  run: echo Hello, world!
