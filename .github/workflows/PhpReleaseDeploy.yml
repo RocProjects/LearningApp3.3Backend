@@ -14,12 +14,13 @@ jobs:
       uses: SamKirkland/FTP-Deploy-Action@2.0.0
       env:
         # FTP server name (you may need to specify a port)
-        FTP_SERVER: groep05.mediaenvormgeving.nl
+        FTP_SERVER: groep05.mediaenvormgeving.nl:21
         # FTP account username
         FTP_USERNAME: groep05@mediaenvormgeving.nl
         # FTP account password
         FTP_PASSWORD: groep05
         REMOTE_DIR:  Server
+        args: --exclude-glob=.git*/** --exclude-glob=.git**
     #- uses: actions/checkout@v2
    # - name: Run a one-line script
     #  run: echo Hello, world!
