@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  ValidateCode:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+   # - name: Run a one-line script
+    #  run: echo Hello, world!
+    #- name: Run a multi-line script
+     # run: |
+      #  echo Add other actions to build,
+       # echo test, and deploy your project.
+  
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    #- name: Setup PHP
+      #uses: shivammathur/setup-php@v1
+     # with:
+      #  php-version: '7.1'
+       # coverage: xdebug #optional, setup coverage driver
+        #tools: php-cs-fixer, phpunit #optional, setup tools globally
+
+    - name: Publish code
+      uses: SamKirkland/FTP-Deploy-Action@2.0.0
+      with:
+        # FTP server name (you may need to specify a port)
+        ftp_server: groep05.mediaenvormgeving.nl
+        # FTP account username
+        ftp_username: groep05@mediaenvormgeving.nl
+        # FTP account password
+        ftp_password: groep05
+        remote_dir:  Server
+    
+    
