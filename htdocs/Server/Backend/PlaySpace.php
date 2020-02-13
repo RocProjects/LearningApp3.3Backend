@@ -8,20 +8,18 @@ abstract class Node
     public function __construct()
     {
         $this['$type'] = self::GetType();
-        $bla = 0;
-        $bla = "";
     }
 
-  //  public static function LoadFromJson(object $jsonObj) : Node
-  //  {
-        //switch($jsonObj->$type)
-        //
-           // case InfoNode::GetType():
-            //    return new InfoNode($jsonObj);
-         //   break;
-       // }
-       // return null;
-   // }
+    public static function LoadFromJson(object $jsonObj) : Node
+    {
+        switch($jsonObj->$type)
+        {     
+            case InfoNode::GetType():
+                return new InfoNode($jsonObj);
+            break;
+        }
+        return null;
+    }
 
 
 
@@ -77,7 +75,7 @@ class Location
 
         foreach($jsonObj->nodes as $node)
         {
-           // array_push($Location->Nodes, Node::LoadFromJson($node));
+            array_push($Location->Nodes, Node::LoadFromJson($node));
         }
 
         return $Location;
@@ -92,6 +90,7 @@ class Location
         try{
             //TODO fix image
             $dbStatement->execute(array($Playspace->GetID(), $this->Index, '0x00'));
+            $this->ID = $dbConn->lastInsertId();
         }catch(PDOException $e){
             die(new UserRegisterQuaryResponse($e));
         }
