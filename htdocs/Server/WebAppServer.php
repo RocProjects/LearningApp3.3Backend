@@ -1,5 +1,5 @@
 <?php
-    session_start();
+    
     if(!isset($_POST["Action"]))
         die("<h1>ACCES DENIED</h1>");
 
@@ -9,7 +9,7 @@
     foreach (glob(__DIR__.'/Functions/*.php') as $file) {
         include_once $file;
     }
-
+    session_start();
 
 
     $PageSize = 10;
