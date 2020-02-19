@@ -46,10 +46,10 @@
                 $location->Save($this);
             }
         
-          //  die(new Response(ResponseTypes::succeeded, " ".$this->Name." ID:".$this->ID));
+           die(new Response(ResponseTypes::succeeded, "Playspace saved"));
         }
 
-        public function GetID() :int
+        public function GetID() : int
         {
             return $this->ID;
         }

@@ -13,6 +13,7 @@
             $this->FirstName = $data->firstname;
             $this->LastName = $data->lastname;
             $this->IsTeacher = $data->teacher;
+            $this->Username = $data->username;
             $this->ID = $data->ID;
         
             if($data->klas == null)

@@ -8,7 +8,7 @@
         $userName = $_POST["UserName"];
         $password = crypt($_POST["Password"], $salt);
     
-        if (!($dbStatement = $dbConn->prepare("SELECT ID, firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
+        if (!($dbStatement = $dbConn->prepare("SELECT ID,username ,firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?"))) {
             die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
         }
     
