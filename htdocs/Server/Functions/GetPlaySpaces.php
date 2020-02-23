@@ -1,52 +1,53 @@
 <?php
 
-    function GetPlaySpace()
+    function GetPlaySpacePage()
     {
         SessionActive();
-        ValidateParameters($parameters = array("page"));
+        ValidateParameters($parameters = array("Page"));
 
-        global $dbConn;
+        global $dbConn,$PageSize;
 
+        
         $UserSession = $_SESSION['User'];
       
+       // if($UserSession->IsTeacher)
+       // {
+            $quary = "SELECT `playspaces`.`ID`,
+            `playspaces`.`Name`,`playspaces`.`Description`,
+            `playspaces`.`image` , `users`.`firstname`,`users`.`lastname` 
+        FROM `playspaces` 
+            JOIN `users` ON (`CreatorID`=`users`.`ID`) 
+            LEFT OUTER JOIN `playspaceklasassignments` 
+                ON IF( :KlasID IS NULL, false,`playspaceklasassignments`.`KlasID`= :KlasID)
+        WHERE 
+            `playspaces`.`ID` = COALESCE(:playspaceID,`playspaces`.`ID`) AND  
+             IF(:KlasID IS NULL,true,`playspaces`.`ID` =`playspaceklasassignments`.`playspaceID`) AND
+            `playspaces`.`Name` = COALESCE(:PlaySpaceName,`playspaces`.`Name`) ".LimitStatement($_POST["Page"]);
 
-        $data = null;
-        $dbStatement = null;
-        if($UserSession->IsTeacher)
-        {
+
+            //LIMIT 1,2
+            $statement = PrepareSQL($quary);
+            $statement->bindValue(":KlasID",isset($_SESSION['KlasID']) ? $_SESSION['KlasID'] : null);
+            $statement->bindValue(":playspaceID", isset($_SESSION['PlaySpaceID']) ? $_SESSION['PlaySpaceID'] : null);
+            $statement->bindValue(":PlaySpaceName",isset($_SESSION['PlaySpaceName']) ? $_SESSION['PlaySpaceName'] : null);
+            
+
+       // }
+      //  else
+      //TODO FIX THIS ONE
+        if(false) {
             $dbStatement = "SELECT `playspaces`.`ID`,
-                `playspaces`.`Name`,`playspaces`.`Description`,
-                `playspaces`.`image` , `users`.`firstname`,`users`.`lastname` 
-            FROM `playspaces` JOIN `users` ON (`CreatorID`=`users`.`ID`) JOIN `playspaces` on (`PlaySpaceID` =`playspaces`.`ID` = WHERE ";
-
-            
-        }
-        else
-        {
-            $dbStatement = "SELECT ID, firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=?";
+            `playspaces`.`Name`,`playspaces`.`Description`,
+            `playspaces`.`image` , `users`.`firstname`,`users`.`lastname` 
+        FROM `playspaces` JOIN `users` ON (`CreatorID`=`users`.`ID`)  JOIN `playspaceklasassignments` ON (`KlasID` = ?)
+        WHERE 
+            `playspaces`.`ID` = COALESCE(?,`playspaces`.`ID`) AND `playspaces`.`ID` =`PlaySpaceID` AND 
+            `playspaces`.`Name` = COALESCE(?,`playspaces`.`Name`)
+            ";
         }
 
-        if(!($dbConn->prepare($dbStatement))) {
-            die(new Response(ResponseTypes::FatalError, "GetPlaySpaces prepare failed: ".$dbConn->error));
-        }
-    
-    
-        
-        try {
-            $dbStatement->execute(array($userName,$password));
-        } catch (PDOException $e) {
-            die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-        }
-    
-        $result = $dbStatement->fetchAll(PDO::FETCH_OBJ);
-    
-        if(count($result) >= 1)
-        {
-            $user = new User($result[0]);
-            
-            $_SESSION['User'] = $user;
-        
-            die(new UserLoginResponse(ResponseTypes::succeeded,"Auhtenticated", $user));
-        }
+
+        $result = ExecuteSqlStatement($statement, array(1,2));
+        die(new PlaySpacePageResponse($result));
         
     }

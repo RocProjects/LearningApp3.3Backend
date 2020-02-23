@@ -1,22 +1,27 @@
 <?php
-    include_once 'Location.php';
+    include_once __DIR__.'/Location.php';
     class PlaySpace
     {
-        protected  $ID = -1;
+        public $ID = -1;
         public $Name;
         public $Description;
+        public $BackGround;
         public $Locations = array();
+
+
+        public function __construct(int $ID = -1,string $Name = "",string $Description = "",string $BackGround= "")
+        {
+            $this->ID = $ID;
+            $this->Name = $Name;
+            $this->Description = $Description;
+            $this->BackGround = $BackGround;
+        }
 
         public static function LoadFromJson(string $jsonData) : PlaySpace
         {
-
             $jsonObject = json_decode($jsonData);
-
-            $PlaySpace = new PlaySpace();
-            $PlaySpace->Name = $jsonObject->Name;
-            $PlaySpace->Description = $jsonObject->Description;
-            //$PlaySpace->ID = $_SESSION['User']->GetID();
-
+            //TODO INSERT BACKGROUND
+            $PlaySpace = new PlaySpace($jsonObject->ID,$jsonObject->Name,$jsonObject->Description,"");
 
             for ($x = 0; $x < count($jsonObject->locations); $x++) {
                 $element = $jsonObject->locations[$x];
@@ -27,14 +32,48 @@
             return $PlaySpace;
         }
 
+        //info from a playspace is not relevant for students so this is only replicated for teachers
+        public static function LoadFromSQL(int $ID) : PlaySpace
+        {
+            global $dbConn;
+            if($_SESSION['User']->IsTeacher)
+            {
+                if (!($dbStatement = $dbConn->prepare("SELECT `Name` ,`CreatorID`, `Description`, `image`FROM `playspaces` WHERE `ID`=? LIMIT 1"))) 
+                {
+                    die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
+                }
+                try {
+                    $dbStatement->execute(array($ID));
+                } catch (PDOException $e) {
+                    die(new Response(ResponseTypes::FatalError, $e->getMessage()));
+                }
+            
+                $results = $dbStatement->fetchAll(PDO::FETCH_OBJ);
+            
+                if(count($results) >= 1)
+                {
+                    $result = $results[0];
+                    $PlaySpace = new PlaySpace($ID,$result->Name,$result->CreatorID,$result->Description,$result->image);
+
+                    $PlaySpace->Locations = Location::LoadFromSQL($ID);
+
+                    return $PlaySpace;
+                }
+
+                    die(new Response(ResponseTypes::Silent_FatalError,"Failed to recieve playspace :".$ID));
+                //return new PlaySpace();
+
+            }
+        }
+
         public function Save()
         {
             TeacherSessionActive();
 
             global $dbConn;
-            $dbStatement = $dbConn->prepare("INSERT INTO `playspaces` (`Name`, `CreatorID`, `Description`) VALUES (?,?,?) ");
+            $dbStatement = $dbConn->prepare("INSERT INTO `playspaces` (`Name`, `CreatorID`, `Description`,`image`) VALUES (?,?,?,?) ");
             try{
-                $dbStatement->execute(array($this->Name, $_SESSION['User']->GetID(), $this->Description));
+                $dbStatement->execute(array($this->Name, $_SESSION['User']->GetID(), $this->Description,"TODO"));
                 $this->ID = $dbConn->lastInsertId();
             }catch(PDOException $e){
                 die(new UserRegisterQuaryResponse($e));
@@ -52,10 +91,5 @@
         public function GetID() : int
         {
             return $this->ID;
-        }
-
-        public function __toString()
-        {
-            return "ID: ".$this->ID."  Name:".$this->Name." Description:".$this->Description." Locationsize:".count($this->Locations);
         }
     }

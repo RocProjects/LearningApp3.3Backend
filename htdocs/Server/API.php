@@ -36,3 +36,65 @@ function ValidateParameters(array $parameters)
         }
     }
 }
+
+function ExecuteSql(string $statement,array $parameters) : array
+{
+    global $dbConn;
+    try 
+    {
+        if (!($dbStatement = $dbConn->prepare($statement))) 
+        {
+          die(new Response(ResponseTypes::FatalError, "Sql prepare failed: ".$dbConn->error));
+        }
+
+    }catch(Exception $e)
+    {
+        die(new Response(ResponseTypes::FatalError, "Sql prepare Exception: ".$e->getMessage()));
+    }
+
+    
+    try {
+        $dbStatement->execute($parameters);
+    } catch (PDOException $e) {
+        die(new Response(ResponseTypes::FatalError, $e->getMessage()));
+    }
+
+    return $dbStatement->fetchAll(PDO::FETCH_OBJ);;
+}
+
+function PrepareSQL(string $statement) : PDOStatement
+{
+    global $dbConn;
+    try 
+    {
+        if (!($dbStatement = $dbConn->prepare($statement))) 
+        {
+          die(new Response(ResponseTypes::FatalError, "Sql prepare failed: ".$dbConn->error));
+        }
+
+    }catch(Exception $e)
+    {
+        die(new ExceptionResponse($e));
+    }
+
+    return $dbStatement;
+}
+
+function ExecuteSqlStatement(PDOStatement $statement) : array
+{
+    try {
+        $statement->execute();
+    } catch (PDOException $e) {
+        die(new ExceptionResponse($e));
+    }
+
+    return $statement->fetchAll(PDO::FETCH_OBJ);;
+}
+
+function LimitStatement(int $page) : string
+{
+    global $PageSize;
+    //this limit solution is terrible but it works for now
+
+    return "LIMIT ".($page * $PageSize).",".$PageSize;
+}

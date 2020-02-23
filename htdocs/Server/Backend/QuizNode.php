@@ -1,5 +1,5 @@
 <?php
-    include_once 'Node.php';
+    include_once __DIR__.'/Node.php';
     
     class Quiz
     {
@@ -44,7 +44,7 @@
     class QuizNode extends Node
     {
         public $quiz;
-        protected $Type = "Quiz";
+        protected static $Type = "Quiz";
 
         public static function LoadFromJson(object $jsonObj) : Node
         {
@@ -78,4 +78,12 @@
                 die(new UserRegisterQuaryResponse($e));
             }
         }
+
+        public function GetNodeJson() : array
+        {
+            return array(
+                'quiz'=> json_encode($this->quiz)
+            );
+        }
+        
     }

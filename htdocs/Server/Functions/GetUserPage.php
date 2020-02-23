@@ -2,7 +2,7 @@
     function GetUserPage()
     {
         global $dbConn;
-        ValidateParameters($parameters = array("page"));
+        ValidateParameters($parameters = array("Page"));
 
         $statement = "SELECT firstname, lastname, klas,teacher FROM `users`";
 

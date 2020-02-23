@@ -1,8 +1,8 @@
 <?php
-     include_once 'Node.php';
+     //include_once __DIR__.'/Node.php';
      class TravelNode extends Node
      {
-         protected $Type = "Travel";
+         protected static $Type = "Travel";
          public $TargetLocation = -1;
  
          public static function LoadFromJson(object $jsonObj) : Node
@@ -29,5 +29,12 @@
              }catch(PDOException $e){
                  die(new UserRegisterQuaryResponse($e));
              }
+         }
+
+         public function GetNodeJson() : array
+         {
+             return array(
+                 'TRAVELNODE'=> "TODO"
+             );
          }
     }

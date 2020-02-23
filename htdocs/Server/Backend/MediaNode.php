@@ -1,9 +1,9 @@
 <?php
-     include_once 'Node.php';
+     include_once __DIR__.'/Node.php';
      class MediaNode extends Node
      {
          public $image;
-         public $Type = "Media";
+         public static $Type = "Media";
  
          public static function LoadFromJson(object $jsonObj) : Node
          {
@@ -29,5 +29,11 @@
              }catch(PDOException $e){
                  die(new UserRegisterQuaryResponse($e));
              }
+         }
+         public function GetNodeJson() : array
+         {
+             return array(
+                 'image'=> $this->image
+             );
          }
     }

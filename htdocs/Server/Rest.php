@@ -39,10 +39,6 @@
           parent::__construct($Status, $body);
           $this->user = $user;
       }
-      public function __toString()
-      {
-          return json_encode($this);
-      }
   }
 
   class QuaryResponse extends Response
@@ -91,51 +87,28 @@
       }
   }
 
-
-
-
-  /*
+  class PlaySpacePageResponse extends Response
   {
-    "locations": [
-      {
-        "bg": null,
-        "nodes": [
-          {
-            "$type": "Core.PlaySpace.InfoNode, Assembly-CSharp",
-            "Info": null,
-            "Name": "BaseNode",
-            "Location": {
-              "x": 0.0,
-              "y": 0.0,
-              "z": 0.0
-            }
-          },
-          {
-            "$type": "Core.PlaySpace.QuizNode, Assembly-CSharp",
-            "quiz": {
-              "questions": [
-                {
-                  "answerInfo": [
-                    "yes",
-                    "no"
-                  ],
-                  "correctAnswers": null,
-                  "info": "Test",
-                  "maxTime": 69
-                }
-              ]
-            },
-            "Name": "BaseNode",
-            "Location": {
-              "x": 0.0,
-              "y": 0.0,
-              "z": 0.0
-            }
-          }
-        ]
-      }
-    ],
-    "Name": "",
-    "Description": ""
+    public $PlaySpaces = array();
+    public function __construct(array $returnedData)
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+
+        foreach ($returnedData as $element) {
+            array_push($this->PlaySpaces, new PlaySpacePage($element));
+        }
+    }
   }
-  */
+
+  class ExceptionResponse extends Response
+  {
+    public function __construct(Exception $e)
+    {
+        $this->ResponseStatus = ResponseTypes::FatalError;
+        $this->StatusMessage = $e->getMessage();
+
+        $this->StackCall = $e->getTraceAsString();
+    }
+  }
+
+  
