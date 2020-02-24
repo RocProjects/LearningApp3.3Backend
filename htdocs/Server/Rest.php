@@ -100,6 +100,32 @@
     }
   }
 
+  class Klas
+  {
+      public $ID;
+      public $Name;
+
+      public function __construct($data)
+      {
+        $this->ID = $data->ID;
+        $this->Name = isset($data->DisplayName) ? $data->DisplayName : $data->Name;
+      }
+  }
+
+  class KlassenResponse extends Response
+  {
+      
+    public $Klassen = array();
+    public function __construct(array $returnedData)
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+
+        foreach ($returnedData as $element) {
+            array_push($this->Klassen, new Klas($element));
+        }
+    }
+  }
+
   class ExceptionResponse extends Response
   {
     public function __construct(Exception $e)

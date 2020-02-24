@@ -84,7 +84,7 @@ function ExecuteSqlStatement(PDOStatement $statement) : array
 {
     try {
         $statement->execute();
-    } catch (PDOException $e) {
+    } catch (Exception $e) {
         die(new ExceptionResponse($e));
     }
 
@@ -96,5 +96,5 @@ function LimitStatement(int $page) : string
     global $PageSize;
     //this limit solution is terrible but it works for now
 
-    return "LIMIT ".($page * $PageSize).",".$PageSize;
+    return "LIMIT ".$PageSize.",".($page * $PageSize);
 }

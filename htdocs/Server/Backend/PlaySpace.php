@@ -5,23 +5,23 @@
         public $ID = -1;
         public $Name;
         public $Description;
-        public $BackGround;
+        public $DisplayImage;
         public $Locations = array();
 
 
-        public function __construct(int $ID = -1,string $Name = "",string $Description = "",string $BackGround= "")
+        public function __construct(int $ID = -1,string $Name = "",string $Description = "",string $DisplayImage= "")
         {
             $this->ID = $ID;
             $this->Name = $Name;
             $this->Description = $Description;
-            $this->BackGround = $BackGround;
+            $this->DisplayImage = $DisplayImage;
         }
 
         public static function LoadFromJson(string $jsonData) : PlaySpace
         {
             $jsonObject = json_decode($jsonData);
             //TODO INSERT BACKGROUND
-            $PlaySpace = new PlaySpace($jsonObject->ID,$jsonObject->Name,$jsonObject->Description,"");
+            $PlaySpace = new PlaySpace($jsonObject->ID,$jsonObject->Name,$jsonObject->Description,$jsonObject->DisplayImage);
 
             for ($x = 0; $x < count($jsonObject->locations); $x++) {
                 $element = $jsonObject->locations[$x];
@@ -38,7 +38,7 @@
             global $dbConn;
             if($_SESSION['User']->IsTeacher)
             {
-                if (!($dbStatement = $dbConn->prepare("SELECT `Name` ,`CreatorID`, `Description`, `image`FROM `playspaces` WHERE `ID`=? LIMIT 1"))) 
+                if (!($dbStatement = $dbConn->prepare("SELECT `Name` , `Description`, `image`FROM `playspaces` WHERE `ID`=? LIMIT 1"))) 
                 {
                     die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
                 }
@@ -53,7 +53,7 @@
                 if(count($results) >= 1)
                 {
                     $result = $results[0];
-                    $PlaySpace = new PlaySpace($ID,$result->Name,$result->CreatorID,$result->Description,$result->image);
+                    $PlaySpace = new PlaySpace($ID,$result->Name,$result->Description,$result->image);
 
                     $PlaySpace->Locations = Location::LoadFromSQL($ID);
 
@@ -73,7 +73,7 @@
             global $dbConn;
             $dbStatement = $dbConn->prepare("INSERT INTO `playspaces` (`Name`, `CreatorID`, `Description`,`image`) VALUES (?,?,?,?) ");
             try{
-                $dbStatement->execute(array($this->Name, $_SESSION['User']->GetID(), $this->Description,"TODO"));
+                $dbStatement->execute(array($this->Name, $_SESSION['User']->GetID(), $this->Description,$this->DisplayImage));
                 $this->ID = $dbConn->lastInsertId();
             }catch(PDOException $e){
                 die(new UserRegisterQuaryResponse($e));

@@ -9,9 +9,7 @@
 
         
         $UserSession = $_SESSION['User'];
-      
-       // if($UserSession->IsTeacher)
-       // {
+
             $quary = "SELECT `playspaces`.`ID`,
             `playspaces`.`Name`,`playspaces`.`Description`,
             `playspaces`.`image` , `users`.`firstname`,`users`.`lastname` 
@@ -22,32 +20,33 @@
         WHERE 
             `playspaces`.`ID` = COALESCE(:playspaceID,`playspaces`.`ID`) AND  
              IF(:KlasID IS NULL,true,`playspaces`.`ID` =`playspaceklasassignments`.`playspaceID`) AND
-            `playspaces`.`Name` = COALESCE(:PlaySpaceName,`playspaces`.`Name`) ".LimitStatement($_POST["Page"]);
+            `playspaces`.`Name` = COALESCE(:PlaySpaceName,`playspaces`.`Name`) AND 
+            IF(:IsTeacher ,
+                (`users`.`firstname` = :Firstname AND `users`.`lastname` = :Lastname),
+                true ) ";//.LimitStatement($_POST["Page"]);
 
+
+            
 
             //LIMIT 1,2
             $statement = PrepareSQL($quary);
-            $statement->bindValue(":KlasID",isset($_SESSION['KlasID']) ? $_SESSION['KlasID'] : null);
-            $statement->bindValue(":playspaceID", isset($_SESSION['PlaySpaceID']) ? $_SESSION['PlaySpaceID'] : null);
-            $statement->bindValue(":PlaySpaceName",isset($_SESSION['PlaySpaceName']) ? $_SESSION['PlaySpaceName'] : null);
+
+            if($UserSession->IsTeacher)
+            {
+                $statement->bindValue(":KlasID",(isset($_POST['KlasID']) ? $_POST['KlasID'] : null));
+            }
+            else
+            {
+                $statement->bindValue(":KlasID",$UserSession->Klas->ID);
+            }
             
+            $statement->bindValue(":playspaceID", (isset($_POST['PlaySpaceID']) ? $_POST['PlaySpaceID'] : null));
+            $statement->bindValue(":PlaySpaceName",(isset($_POST['PlaySpaceName']) ? $_POST['PlaySpaceName'] : null));
+            $statement->bindValue(":IsTeacher",$UserSession->IsTeacher);
+            $statement->bindValue(":Firstname",$UserSession->FirstName);
+            $statement->bindValue(":Lastname",$UserSession->LastName);
 
-       // }
-      //  else
-      //TODO FIX THIS ONE
-        if(false) {
-            $dbStatement = "SELECT `playspaces`.`ID`,
-            `playspaces`.`Name`,`playspaces`.`Description`,
-            `playspaces`.`image` , `users`.`firstname`,`users`.`lastname` 
-        FROM `playspaces` JOIN `users` ON (`CreatorID`=`users`.`ID`)  JOIN `playspaceklasassignments` ON (`KlasID` = ?)
-        WHERE 
-            `playspaces`.`ID` = COALESCE(?,`playspaces`.`ID`) AND `playspaces`.`ID` =`PlaySpaceID` AND 
-            `playspaces`.`Name` = COALESCE(?,`playspaces`.`Name`)
-            ";
-        }
-
-
-        $result = ExecuteSqlStatement($statement, array(1,2));
+        $result = ExecuteSqlStatement($statement);
         die(new PlaySpacePageResponse($result));
         
     }

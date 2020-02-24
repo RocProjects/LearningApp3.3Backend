@@ -8,19 +8,15 @@
         $userName = $_POST["UserName"];
         $password = crypt($_POST["Password"], $salt);
     
-        if (!($dbStatement = $dbConn->prepare("SELECT ID,username ,firstname, lastname, klas,teacher FROM `users` WHERE `username`=? AND `password`=? LIMIT 1"))) {
-            die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-        }
+            $quary = "SELECT `users`.ID as UserID,
+            username, firstname, lastname,teacher ,
+            `klassen`.`ID` as KlasID,
+            DisplayName as KlasName
+        FROM `users` JOIN `klassen` ON (`users`.`klas` = `klassen`.`ID`) 
+        WHERE `username`=? AND `password`=? LIMIT 1";
+       
     
-    
-        
-        try {
-            $dbStatement->execute(array($userName,$password));
-        } catch (PDOException $e) {
-            die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-        }
-    
-        $result = $dbStatement->fetchAll(PDO::FETCH_OBJ);
+        $result = ExecuteSql($quary,array($userName,$password));
     
         if(count($result) >= 1)
         {

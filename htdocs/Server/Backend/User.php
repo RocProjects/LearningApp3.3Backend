@@ -1,10 +1,25 @@
 <?php
+
+    class UserClass
+    {
+        public $DisplayName = "";
+        public $ID = -1;
+       //public $StartingDate = "";
+
+        public function __construct($data)
+        {
+            $this->DisplayName = $data->KlasName;
+            $this->ID = $data->KlasID;
+           // $this->StartingDate = $data->KlasStartDate;
+        }
+    }
+
     class User
     {
         protected  $ID;
         public $FirstName;
         public $LastName;
-        public $Klas;
+        public $Klas;// Class Object
         public $IsTeacher;
     
         public function __construct($data)
@@ -14,15 +29,9 @@
             $this->LastName = $data->lastname;
             $this->IsTeacher = $data->teacher;
             $this->Username = $data->username;
-            $this->ID = $data->ID;
-        
-            if($data->klas == null)
-            {
-                $this->Klas = "none";
-            }
-            else{
-                $this->Klas = $data->klas;
-            }
+            $this->ID = $data->UserID;
+
+            $this->Klas = new UserClass($data);
         }
     
         public function GetID() :int
