@@ -31,7 +31,7 @@
             $this->Username = $data->username;
             $this->ID = $data->UserID;
 
-            if(isset($this->KlasName) || isset($this->KlasID))
+            if(isset($data->KlasName) || isset($data->KlasID))
             {
                 $this->Klas = new UserClass($data);
             }
