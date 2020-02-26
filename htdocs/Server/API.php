@@ -100,5 +100,5 @@ function LimitStatement($page)
     global $PageSize;
     //this limit solution is terrible but it works for now
 
-    return "LIMIT ".$PageSize.",".($page * $PageSize);
+    return "LIMIT ".($page *  $PageSize)." , ".$PageSize;
 }

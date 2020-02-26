@@ -1,5 +1,5 @@
 <?php
-    function UnAssignKlasFromStudent()
+    function RemoveKlasFromStudent()
     {
         TeacherSessionActive();
         ValidateParameters(array("StudentID"));
