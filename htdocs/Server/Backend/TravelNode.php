@@ -5,14 +5,14 @@
          protected static $Type = "Travel";
          public $TargetLocation = -1;
  
-         public static function LoadFromJson(object $jsonObj) : Node
+         public static function LoadFromJson($jsonObj)
          {
              $node = new TravelNode();
              $node->TargetLocation = $jsonObj->TargetLocation;
              return $node;
          }
  
-         public static function GetAssemblyType() : string
+         public static function GetAssemblyType()
          {
              return "Core.PlaySpace.TravelNode, Assembly-CSharp";
          }

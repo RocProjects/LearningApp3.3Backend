@@ -5,7 +5,7 @@
         public $Coordinate;
         protected static $Type = "Node";
 
-        public static function LoadFromJson(object $jsonObj) : Node
+        public static function LoadFromJson($jsonObj)
         {
             $NodeType = $jsonObj->{'$type'};
             $Node = null;
@@ -31,38 +31,31 @@
         {
             global $dbConn;
             //TODO SORT ON LOCATION ID
-            if (!($dbStatement = $dbConn->prepare("SELECT `ID` , `Coordinate`,`Type`FROM `node` WHERE `LocationID`=?"))) 
-            {
-                die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-            }
-            try {
-                $dbStatement->execute(array($LocationID));
-            } catch (PDOException $e) {
-                die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-            }
-        
+            $quary = "SELECT `ID` , `Coordinate`,`Type`FROM `node` WHERE `LocationID`=?";
+            $result = ExecuteSql($quary,array($LocationID));
             $nodes = array();
-            foreach ($dbStatement->fetchAll(PDO::FETCH_OBJ) as &$value) 
+            foreach ($result as $NodeData) 
             {
                 $Node = null;
-                switch($value->Type)
+                switch($NodeData->Type)
                 {     
                     case InfoNode::$Type:
-                        $Node = InfoNode::LoadFromSQL($value);
+                        $Node = InfoNode::LoadFromSQL($NodeData);
                     break;
                     case QuizNode::$Type:
-                        $Node = QuizNode::LoadFromSQL($value);
+                        $Node = QuizNode::LoadFromSQL($NodeData);
+                    break;
+                    case MediaNode::$Type:
+                        $Node = MediaNode::LoadFromSQL($NodeData);
                     break;
                     default:
-                        die("Unkown NodeType: ".$value->Type);
+                        die(new Response(ResponseTypes::FatalError,"Unkown NodeType: ".$NodeData->Type));
                     break;
                 }
 
                 $Node->{'$type'} = $Node::GetAssemblyType(); 
-                $Node->Coordinate = $value->Coordinate;
-                $Node->ID = $value->ID;
-               // $locationInstance = new Location($value->ID,-1,$value->image);
-                //$locationInstance->Nodes = Node::LoadFromSQL($locationInstance->ID);
+                $Node->Coordinate = $NodeData->Coordinate;
+                $Node->ID = $NodeData->ID;
                 array_push($nodes, $Node);
             }
 
@@ -71,12 +64,12 @@
         }
 
 
-        public static function GetAssemblyType() : string
+        public static function GetAssemblyType()
         {
             return "NULL";
         }
 
-        public abstract function GetNodeJson() : array;
+        public abstract function GetNodeJson();
 
         public function jsonSerialize ( )
         {
@@ -98,13 +91,13 @@
         public function Save($Location)
         {
             global $dbConn;
+            
             //INSERT INTO `node` (`ID`, `LocationID`, `Coordinate`, `Type`) VALUES (NULL, '', '', '')
-            $dbStatement = $dbConn->prepare("INSERT INTO `node` ( `LocationID`, `Coordinate`,`Type`) VALUES (?,?,?) ");
-            try{
-                $dbStatement->execute(array($Location->GetID(), json_encode($this->Coordinate), $this::$Type));
-                $this->ID = $dbConn->lastInsertId();
-            }catch(PDOException $e){
-                die(new UserRegisterQuaryResponse($e));
-            }
+            $quary = "INSERT INTO `node` ( `LocationID`, `Coordinate`,`Type`) VALUES (?,?,?) ";
+
+           // die($Location->GetID().":::".json_encode($this->Coordinate).":::".$this::$Type);
+            ExecuteSql($quary,array($Location->GetID(), json_encode($this->Coordinate), $this::$Type));
+
+            $this->ID = $dbConn->lastInsertId();
         }
     }

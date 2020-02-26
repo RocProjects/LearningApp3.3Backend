@@ -14,7 +14,7 @@ function SessionActive()
 {
     if (!isset($_SESSION['User'])) {
         //user is not logged in/ session is invalid
-        die(new Response(ResponseTypes::FatalError, "Failed to find user session"));
+        die(new Response(ResponseTypes::Silent_FatalError, "Failed to find user session"));
     }
 }
 
@@ -22,47 +22,51 @@ function TeacherSessionActive()
 {
     SessionActive();
 
-    if(!$_SESSION['User']->IsTeacher)
+    if($_SESSION['User']->IsTeacher == 0)
     {
-        die(new Response(ResponseTypes::FatalError,"Logged in User is not a teacher"));
+        die(new Response(ResponseTypes::Silent_FatalError,"Logged in User is not a teacher"));
     }
 }
 
-function ValidateParameters(array $parameters)
+function ValidateParameters($parameters)
 {
-    foreach ($parameters as $type) {
+    foreach ($parameters as &$type) {
         if (!isset($_POST[$type])) {
             die(new Response(ResponseTypes::FatalError, "Register: Missing parameter '" . $type . "'"));
         }
     }
+    unset($type);
 }
 
-function ExecuteSql(string $statement,array $parameters) : array
+function ExecuteSql($statement, $parameters)
 {
     global $dbConn;
     try 
     {
-        if (!($dbStatement = $dbConn->prepare($statement))) 
+        $dbStatement = $dbConn->prepare($statement);
+        if (!$dbStatement) 
         {
-          die(new Response(ResponseTypes::FatalError, "Sql prepare failed: ".$dbConn->error));
+          die(new Response(ResponseTypes::FatalError, "Sql prepare failed: ".$dbConn->errorInfo()));
         }
 
     }catch(Exception $e)
     {
-        die(new Response(ResponseTypes::FatalError, "Sql prepare Exception: ".$e->getMessage()));
+        die(new ExceptionResponse($e));
     }
-
     
     try {
-        $dbStatement->execute($parameters);
-    } catch (PDOException $e) {
-        die(new Response(ResponseTypes::FatalError, $e->getMessage()));
+        
+        if($dbStatement->execute($parameters) === false)
+        {
+            die(new Response(ResponseTypes::FatalError, json_encode($dbStatement->errorInfo())));
+        }
+    } catch (Exception $e) {
+        die(new ExceptionResponse($e));
     }
-
     return $dbStatement->fetchAll(PDO::FETCH_OBJ);;
 }
 
-function PrepareSQL(string $statement) : PDOStatement
+function PrepareSQL($statement)
 {
     global $dbConn;
     try 
@@ -80,7 +84,7 @@ function PrepareSQL(string $statement) : PDOStatement
     return $dbStatement;
 }
 
-function ExecuteSqlStatement(PDOStatement $statement) : array
+function ExecuteSqlStatement($statement)
 {
     try {
         $statement->execute();
@@ -91,7 +95,7 @@ function ExecuteSqlStatement(PDOStatement $statement) : array
     return $statement->fetchAll(PDO::FETCH_OBJ);;
 }
 
-function LimitStatement(int $page) : string
+function LimitStatement($page)
 {
     global $PageSize;
     //this limit solution is terrible but it works for now

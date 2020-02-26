@@ -12,7 +12,7 @@
             username, firstname, lastname,teacher ,
             `klassen`.`ID` as KlasID,
             DisplayName as KlasName
-        FROM `users` JOIN `klassen` ON (`users`.`klas` = `klassen`.`ID`) 
+        FROM `users` LEFT OUTER JOIN `klassen` ON (`users`.`klas` = `klassen`.`ID`) 
         WHERE `username`=? AND `password`=? LIMIT 1";
        
     

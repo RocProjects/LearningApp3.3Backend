@@ -28,7 +28,13 @@
 
       public function __toString()
       {
-          return json_encode($this);
+          $json = json_encode($this);
+          if($json == "")
+          {
+            return die(New Response(ResponseTypes::FatalError,"Json Encoding failed ! :". json_last_error()));     
+          }
+         
+          return $json;
       }
   }
 
@@ -73,21 +79,35 @@
       }
   }
 
+  class UserPage
+  {
+      public $ID;
+      public $FirstName;
+      public $LastName;
+
+      public function __construct($data)
+      {
+          $this->ID = $data->ID;
+          $this->FirstName = $data->firstname;
+          $this->LastName = $data->lastname;
+      }
+  }
+
   class UsersPageResponse extends Response
   {
       public $UserInfo = array();
-      public function __construct(PDOStatement $db)
+      public function __construct($Result)
       {
           $this->ResponseStatus = ResponseTypes::succeeded;
-          $this->StatusMessage = json_encode($db->fetchAll(PDO::FETCH_OBJ));
+          $this->StatusMessage = "Recieved Users";
 
-          foreach ($db->fetchAll(PDO::FETCH_OBJ) as $element) {
-              array_push($this->UserInfo, new user($element));
+          foreach ($Result as $element) {
+              array_push($this->UserInfo, new UserPage($element));
           }
       }
   }
 
-  class PlaySpacePageResponse extends Response
+  class PlaySpacePageResponse extends Response 
   {
     public $PlaySpaces = array();
     public function __construct(array $returnedData)
@@ -98,6 +118,7 @@
             array_push($this->PlaySpaces, new PlaySpacePage($element));
         }
     }
+
   }
 
   class Klas
@@ -107,9 +128,21 @@
 
       public function __construct($data)
       {
+          
         $this->ID = $data->ID;
         $this->Name = isset($data->DisplayName) ? $data->DisplayName : $data->Name;
       }
+  }
+
+  class KlasResponse extends Response
+  {
+    public $klas;
+
+    public function __construct($data)
+    {
+        $this->ResponseStatus = ResponseTypes::succeeded;
+        $this->klas = new klas($data);
+    }
   }
 
   class KlassenResponse extends Response

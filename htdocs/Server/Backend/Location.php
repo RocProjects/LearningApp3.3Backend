@@ -1,52 +1,52 @@
 <?php
     class Location
     {
-        protected $ID = -1;
+        protected $ID = "-1";
         protected $Index;
         public $bg = "NULL";
         public $Nodes = array();
     
-        public function __construct($ID = -1,$Index = -1,$Image = "NULL")
+        public function __construct($ID_ ,$Index ,$Image )
         {
-            $this->ID = $ID;
+            $this->ID = $ID_;
             $this->$Index = $Index;
-            $this->bg = $Image;
+            if($Image == null)
+            {
+                $Image = "";
+            }
+            else
+            {
+                $this->bg = $Image;
+            }
         }
 
-        public static function LoadFromJson(object $jsonObj): Location
+        public static function LoadFromJson($jsonObj)
         {
             $Location = new Location(-1,$jsonObj->Index,$jsonObj->bg);
         
             foreach ($jsonObj->nodes as $node) {
                 array_push($Location->Nodes, Node::LoadFromJson($node));
             }
+            unset($node);
         
             return $Location;
         }
 
-        public function LoadFromSQL(int $ID) : array
+        public static function LoadFromSQL($OwnerID)
         {
             global $dbConn;
             //TODO SORT ON LOCATION ID
-            if (!($dbStatement = $dbConn->prepare("SELECT `ID` , `image` FROM `playspacelocation` WHERE `Owner`=?"))) 
-            {
-                die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-            }
-            try {
-                $dbStatement->execute(array($ID));
-            } catch (PDOException $e) 
-            {
-                die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-            }
-        
+            $quary = "SELECT `ID` , `Image` FROM `playspacelocation` WHERE `Owner`=?";
+
+            $result = ExecuteSql($quary,array($OwnerID));
+
             $locations = array();
-            foreach ($dbStatement->fetchAll(PDO::FETCH_OBJ) as &$value) 
+            foreach ($result as $locationResult) 
             {
-                $locationInstance = new Location($value->ID,-1,$value->image);
-                $locationInstance->Nodes = Node::LoadFromSQL($locationInstance->ID);
+                $locationInstance = new Location($locationResult->ID,0,$locationResult->Image);
+                $locationInstance->Nodes = Node::LoadFromSQL($locationResult->ID);
                 array_push($locations, $locationInstance);
             }
-
 
             return $locations;
         }
@@ -59,22 +59,16 @@
         public function Save($Playspace)
         {
             global $dbConn;
-            $dbStatement = $dbConn->prepare("INSERT INTO `playspacelocation` (`Owner`, `Image`) VALUES (?,?)");
+            $quary = "INSERT INTO `playspacelocation` (`Owner`, `Image`) VALUES (?,?)";
 
-            try {
-                //die($this->Image);
-                //TODO fix image
-                $dbStatement->execute(array($Playspace->GetID(), $this->bg));
-                $this->ID = $dbConn->lastInsertId();
-            } catch (Exception $e) {
-                die(new Response(ResponseTypes::FatalError,$e->getMessage()));
-            }
+            ExecuteSql($quary,array($Playspace->GetID(), $this->bg));
         
-            foreach ($this->Nodes as &$Node) {
+            $this->ID = $dbConn->lastInsertId();
+            foreach ($this->Nodes as &$Node) 
+            {
                 $Node->Save($this);
             }
-        
-            unset($Location);
+            unset($Node);
         }
     }
     

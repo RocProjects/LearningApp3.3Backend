@@ -5,7 +5,7 @@
         public $Info;
         protected static $Type = "Info";
 
-        public static function LoadFromJson(object $jsonObj) : Node
+        public static function LoadFromJson($jsonObj)
         {
             $node = new InfoNode();
             //$node->ID = $jsonObj->ID;
@@ -17,36 +17,24 @@
         {
             global $dbConn;
             //TODO SORT ON LOCATION ID
-            if (!($dbStatement = $dbConn->prepare("SELECT `info`FROM `infonode` WHERE `ID`=?  LIMIT 1"))) 
-            {
-                die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-            }
-            try {
-                $dbStatement->execute(array($nodeData->ID));
-            } catch (PDOException $e) {
-                die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-            }
-            $row = $dbStatement->fetch(PDO::FETCH_OBJ);
-
+            $quary = "SELECT `info`FROM `infonode` WHERE `ID`=?  LIMIT 1";
+            $row = ExecuteSql($quary,array($nodeData->ID));
             if($row == null)
             {
                 die(new Response(ResponseTypes::FatalError,"Failed to find node info"));
             }
-
             $node = new InfoNode();
-            $node->ID = $nodeData->ID;
-            $node->Coordinate = $nodeData->Coordinate;
-            $node->Info = $row->info;
+            $node->Info = $row[0]->info;
             return $node;
         }
 
 
-        public static function GetAssemblyType() : string
+        public static function GetAssemblyType()
         {
             return "Core.PlaySpace.InfoNode, Assembly-CSharp";
         }
 
-        public function GetNodeJson() : array
+        public function GetNodeJson()
         {
             return array(
                 'Info'=> $this->Info
@@ -60,11 +48,8 @@
             parent::Save($LocationOBJ);
 
             global $dbConn;
-            $dbStatement = $dbConn->prepare("INSERT INTO `infonode` (`ID`, `info`) VALUES (?,?) ");
-            try{
-                $dbStatement->execute(array($this->ID, $this->Info));
-            }catch(PDOException $e){
-                die(new UserRegisterQuaryResponse($e));
-            }
+            $quary = "INSERT INTO `infonode` (`ID`, `info`) VALUES (?,?) ";
+
+            ExecuteSql($quary,array($this->ID, $this->Info));
         }
     }

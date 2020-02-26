@@ -31,7 +31,14 @@
             $this->Username = $data->username;
             $this->ID = $data->UserID;
 
-            $this->Klas = new UserClass($data);
+            if(isset($this->KlasName) || isset($this->KlasID))
+            {
+                $this->Klas = new UserClass($data);
+            }
+            else
+            {
+                $this->Klas = null;
+            }
         }
     
         public function GetID() :int
