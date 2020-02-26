@@ -9,11 +9,16 @@
         public $Locations = array();
 
 
-        public function __construct(int $ID = -1,string $Name = "",string $Description = "",string $DisplayImage= "")
+        public function __construct($ID = -1,$Name = "",$Description = "",$DisplayImage= "")
         {
             $this->ID = $ID;
             $this->Name = $Name;
             $this->Description = $Description;
+
+            if($DisplayImage == null)
+            {
+                $DisplayImage = "";
+            }
             $this->DisplayImage = $DisplayImage;
         }
 
@@ -33,22 +38,11 @@
         }
 
         //info from a playspace is not relevant for students so this is only replicated for teachers
-        public static function LoadFromSQL(int $ID) : PlaySpace
+        public static function LoadFromSQL($ID) : PlaySpace
         {
             global $dbConn;
-            if($_SESSION['User']->IsTeacher)
-            {
-                if (!($dbStatement = $dbConn->prepare("SELECT `Name` , `Description`, `image`FROM `playspaces` WHERE `ID`=? LIMIT 1"))) 
-                {
-                    die(new Response(ResponseTypes::FatalError, "Login prepare failed: ".$dbConn->error));
-                }
-                try {
-                    $dbStatement->execute(array($ID));
-                } catch (PDOException $e) {
-                    die(new Response(ResponseTypes::FatalError, $e->getMessage()));
-                }
-            
-                $results = $dbStatement->fetchAll(PDO::FETCH_OBJ);
+                $quary = "SELECT `Name` , `Description`, `image`FROM `playspaces` WHERE `ID`=? LIMIT 1";
+                $results = ExecuteSql($quary,array($ID)); 
             
                 if(count($results) >= 1)
                 {
@@ -60,10 +54,9 @@
                     return $PlaySpace;
                 }
 
-                    die(new Response(ResponseTypes::Silent_FatalError,"Failed to recieve playspace :".$ID));
-                //return new PlaySpace();
+                return new PlaySpace();
 
-            }
+            
         }
 
         public function Save()
@@ -80,11 +73,11 @@
             }
 
 
-            foreach($this->Locations as &$location)
+            foreach($this->Locations as $location)
             {
                 $location->Save($this);
             }
-        
+
            die(new Response(ResponseTypes::succeeded, "Playspace saved"));
         }
 

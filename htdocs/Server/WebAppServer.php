@@ -1,5 +1,7 @@
 <?php
-    
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+
     if(!isset($_POST["Action"]))
         die("<h1>ACCES DENIED</h1>");
 
@@ -42,3 +44,5 @@
             "'FatalError: '" . $exception->getMessage() . "\n" . $exception->getFile() . ":" . $exception->getLine()
         ));
     }
+    $e = new Exception();
+    die(new Response(ResponseTypes::FatalError,"Failed to send back a message ::". $e->getTrace()));

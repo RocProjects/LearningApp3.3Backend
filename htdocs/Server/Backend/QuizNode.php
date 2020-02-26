@@ -46,7 +46,7 @@
         public $quiz;
         protected static $Type = "Quiz";
 
-        public static function LoadFromJson(object $jsonObj) : Node
+        public static function LoadFromJson($jsonObj)
         {
             $node = new QuizNode();
             $node->quiz = new Quiz($jsonObj->quiz);
@@ -54,7 +54,7 @@
             return $node;
         }
 
-        public static function GetAssemblyType() : string
+        public static function GetAssemblyType()
         {
             return "Core.PlaySpace.QuizNode, Assembly-CSharp";
         }

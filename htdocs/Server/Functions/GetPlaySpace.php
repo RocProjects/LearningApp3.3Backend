@@ -8,6 +8,5 @@
         global $dbConn;
 
         $UserSession = $_SESSION['User'];
-
         die(new GetPlaySpaceResponse(PlaySpace::LoadFromSQL($_POST['ID'])));
     }
