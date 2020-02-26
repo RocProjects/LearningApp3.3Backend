@@ -18,13 +18,13 @@
             global $dbConn;
             //TODO SORT ON LOCATION ID
             $quary = "SELECT `info`FROM `infonode` WHERE `ID`=?  LIMIT 1";
-            $row = ExecuteSql($quary,array($nodeData->ID));
-            if($row == null)
+            $rows = ExecuteSql($quary,array($nodeData->ID));
+            if(!isset($rows[0]))
             {
                 die(new Response(ResponseTypes::FatalError,"Failed to find node info"));
             }
             $node = new InfoNode();
-            $node->Info = $row[0]->info;
+            $node->Info = $rows[0]->info;
             return $node;
         }
 

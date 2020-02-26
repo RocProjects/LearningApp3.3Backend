@@ -5,7 +5,7 @@
         public $ID = -1;
         public $Name;
         public $Description;
-        public $DisplayImage;
+        public $DisplayImage = "TEMP";
         public $Locations = array();
 
 
@@ -18,8 +18,11 @@
             if($DisplayImage == null)
             {
                 $DisplayImage = "";
+            }else
+            {
+ // $this->DisplayImage = $DisplayImage;
             }
-            $this->DisplayImage = $DisplayImage;
+          
         }
 
         public static function LoadFromJson(string $jsonData) : PlaySpace
@@ -49,7 +52,7 @@
                     $result = $results[0];
                     $PlaySpace = new PlaySpace($ID,$result->Name,$result->Description,$result->image);
 
-                    $PlaySpace->Locations = Location::LoadFromSQL($ID);
+                    $PlaySpace->Locations = Location::LoadFromSQL($PlaySpace);
 
                     return $PlaySpace;
                 }

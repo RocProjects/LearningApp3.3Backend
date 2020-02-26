@@ -2,13 +2,13 @@
     abstract class Node implements JsonSerializable 
     {
         public $ID = -1;
-        public $Coordinate;
+        public $Name = "";
+        public $Location;
         protected static $Type = "Node";
 
         public static function LoadFromJson($jsonObj)
         {
             $NodeType = $jsonObj->{'$type'};
-            $Node = null;
 
             switch($NodeType)
             {     
@@ -18,11 +18,15 @@
                 case QuizNode::GetAssemblyType():
                     $Node = QuizNode::LoadFromJson($jsonObj);
                 break;
+                case MediaNode::GetAssemblyType();
+                    $Node = MediaNode::LoadFromSQL($jsonObj);
+                break;
                 default:
                     die(new Response(ResponseTypes::FatalError,"Unkown NodeType: ".$NodeType));
                 break;
             }
-            $Node->Coordinate = $jsonObj->Location;
+            $Node->Location = $jsonObj->Location;
+            $Node->Name = $jsonObj->Name;
 
             return $Node;
         }
@@ -31,12 +35,11 @@
         {
             global $dbConn;
             //TODO SORT ON LOCATION ID
-            $quary = "SELECT `ID` , `Coordinate`,`Type`FROM `node` WHERE `LocationID`=?";
+            $quary = "SELECT `ID` , `Name`, `Coordinate`,`Type`FROM `node` WHERE `LocationID`=?";
             $result = ExecuteSql($quary,array($LocationID));
             $nodes = array();
             foreach ($result as $NodeData) 
             {
-                $Node = null;
                 switch($NodeData->Type)
                 {     
                     case InfoNode::$Type:
@@ -54,8 +57,9 @@
                 }
 
                 $Node->{'$type'} = $Node::GetAssemblyType(); 
-                $Node->Coordinate = $NodeData->Coordinate;
+                $Node->Location = json_decode ($NodeData->Coordinate);
                 $Node->ID = $NodeData->ID;
+                $Node->Name = $NodeData->Name;
                 array_push($nodes, $Node);
             }
 
@@ -76,14 +80,12 @@
             $JsonArray = array(
             
                 '$type' => $this->{'$type'},
-                'Coordinate' => $this->Coordinate,
-                'ID' => $this->ID
-                
+                'Location' => $this->Location,
+                'ID' => $this->ID,
+                'Name' => $this->Name
             );
 
-            array_push($JsonArray,$this->GetNodeJson());
-
-            return $JsonArray;
+            return array_merge($JsonArray,$this->GetNodeJson());
         }
 
 
@@ -93,10 +95,10 @@
             global $dbConn;
             
             //INSERT INTO `node` (`ID`, `LocationID`, `Coordinate`, `Type`) VALUES (NULL, '', '', '')
-            $quary = "INSERT INTO `node` ( `LocationID`, `Coordinate`,`Type`) VALUES (?,?,?) ";
+            $quary = "INSERT INTO `node` ( `LocationID`, `name`, `Coordinate`,`Type`) VALUES (?,?,?,?) ";
 
            // die($Location->GetID().":::".json_encode($this->Coordinate).":::".$this::$Type);
-            ExecuteSql($quary,array($Location->GetID(), json_encode($this->Coordinate), $this::$Type));
+            ExecuteSql($quary,array($Location->GetID(), $this->Name,json_encode($this->Location), $this::$Type));
 
             $this->ID = $dbConn->lastInsertId();
         }

@@ -1,8 +1,8 @@
 <?php
     class Location
     {
-        protected $ID = "-1";
-        protected $Index;
+        public $ID = "-1";
+        public $Index;
         public $bg = "NULL";
         public $Nodes = array();
     
@@ -16,7 +16,7 @@
             }
             else
             {
-                $this->bg = $Image;
+              //  $this->bg = $Image;
             }
         }
 
@@ -32,20 +32,22 @@
             return $Location;
         }
 
-        public static function LoadFromSQL($OwnerID)
+        public static function LoadFromSQL($OwnerPlaySpace)
         {
             global $dbConn;
             //TODO SORT ON LOCATION ID
             $quary = "SELECT `ID` , `Image` FROM `playspacelocation` WHERE `Owner`=?";
 
-            $result = ExecuteSql($quary,array($OwnerID));
+            $result = ExecuteSql($quary,array($OwnerPlaySpace->GetID()));
 
+            $LocationIndex = 0;
             $locations = array();
             foreach ($result as $locationResult) 
             {
-                $locationInstance = new Location($locationResult->ID,0,$locationResult->Image);
+                $locationInstance = new Location($locationResult->ID,$LocationIndex,$locationResult->Image);
                 $locationInstance->Nodes = Node::LoadFromSQL($locationResult->ID);
                 array_push($locations, $locationInstance);
+            $LocationIndex++;
             }
 
             return $locations;
