@@ -16,7 +16,7 @@
 
     class User
     {
-        protected  $ID;
+        public  $ID;
         public $FirstName;
         public $LastName;
         public $Klas;// Class Object

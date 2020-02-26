@@ -23,7 +23,7 @@
             `playspaces`.`Name` = COALESCE(:PlaySpaceName,`playspaces`.`Name`) AND 
             IF(:IsTeacher ,
                 (`users`.`firstname` = :Firstname AND `users`.`lastname` = :Lastname),
-                true ) ";//.LimitStatement($_POST["Page"]);
+                true ) ".LimitStatement($_POST["Page"]);
 
 
             
